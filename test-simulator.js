@@ -100,6 +100,40 @@ assert(divergentAnalysis.studentExpectation.length > 0, 'Explanation includes st
 assert(divergentAnalysis.whyItDiffers.length > 0, 'Explanation includes why it differs');
 assert(divergentAnalysis.nextInspectionTip.length > 0, 'Explanation includes actionable inspection tip');
 
+// 9. REGRESSION: String values from HTML inputs must match numeric simulator values
+const stringPredictionAnalysis = analyzePrediction(
+  {
+    predictedArray: ['1', '2', '3', '4', '5'], // HTML <input type="number"> returns strings
+    predictedSwapIndices: [],
+    predictedI: '0',
+    predictedJ: '4'
+  },
+  traceOdd[0], // INIT step — array is [1, 2, 3, 4, 5]
+  null,
+  MUTATIONS.NONE
+);
+assert(
+  stringPredictionAnalysis.isCorrect === true,
+  'String "1" from HTML input must equal number 1 from simulator (no false discrepancy)'
+);
+
+// 10. REGRESSION: If array matches 100%, pointer mismatch must NOT make it incorrect
+const arrayMatchPointerMismatch = analyzePrediction(
+  {
+    predictedArray: [1, 2, 3, 4, 5], // Correct array
+    predictedSwapIndices: [],
+    predictedI: 99, // Wrong pointer — should not veto correct array
+    predictedJ: 99
+  },
+  traceOdd[0], // INIT step — array is [1, 2, 3, 4, 5]
+  null,
+  MUTATIONS.NONE
+);
+assert(
+  arrayMatchPointerMismatch.isCorrect === true,
+  'Correct array prediction must be isCorrect:true even when pointer values differ'
+);
+
 // 8. Test Transfer Challenge Questions
 const q1 = TRANSFER_CHALLENGE.questions[0];
 const q1Correct = q1.options.find(o => o.isCorrect);

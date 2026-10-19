@@ -1,9 +1,10 @@
 import React from 'react';
-import { Lightbulb, CheckCircle2, AlertCircle, Compass } from 'lucide-react';
+import { Lightbulb, CheckCircle2, AlertCircle, Compass, FastForward } from 'lucide-react';
 
 export function ExplanationPanel({
   currentStep,
-  predictionResult
+  predictionResult,
+  onContinueAfterError = null
 }) {
   const analysis = predictionResult ? predictionResult.analysis : null;
 
@@ -82,6 +83,19 @@ export function ExplanationPanel({
                 <p className="card-text text-secondary">{analysis.nextInspectionTip}</p>
               </div>
             </div>
+
+            {/* Run halted on this divergence: the user continues after reading the error */}
+            {!analysis.isCorrect && onContinueAfterError && (
+              <button
+                type="button"
+                className="action-btn primary-btn continue-after-error-btn"
+                onClick={onContinueAfterError}
+                title="The run is paused here. Continue to the next step once you have understood the error."
+              >
+                <FastForward size={16} />
+                <span>I Understand the Error — Continue Run</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="empty-explanation-state">

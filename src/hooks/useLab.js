@@ -1,10 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { MUTATIONS, MUTATION_DEFINITIONS } from '../engine/mutations.js';
 import { generateExecutionTrace } from '../engine/reverseArraySimulator.js';
 import { analyzePrediction } from '../engine/explanationEngine.js';
 import { DEFAULT_ARRAY } from '../data/labs.js';
 
-export function useLab() {
+/**
+ * @param {boolean} isMentalGateMode true while the user is in "Mental Model (Predict Mode)".
+ * In this mode auto-run pauses at EVERY step: the trace only advances once the user
+ * commits a prediction (or clicks Reveal Without Predicting / Run again).
+ */
+export function useLab(isMentalGateMode = false) {
   const [inputArray, setInputArray] = useState(DEFAULT_ARRAY);
   const [mutationType, setMutationType] = useState(MUTATIONS.NONE);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -12,6 +17,20 @@ export function useLab() {
   const [playbackSpeed, setPlaybackSpeed] = useState(1200); // ms per step
 
   const [predictionHistory, setPredictionHistory] = useState({}); // stepIndex -> { prediction, analysis }
+
+  // Timer that resumes auto-play after a committed prediction (gate mode)
+  const advanceTimerRef = useRef(null);
+  const clearAdvanceTimer = useCallback(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+  }, []);
+
+  // Play-session bookkeeping: index from which the current run started.
+  // The gate must never pause the very step the user launched from — only once we
+  // arrive at a NEW step that has no committed prediction.
+  const playStartIndexRef = useRef(null);
 
   // Session stats (calculated strictly from actual interactions)
   const [stats, setStats] = useState({
@@ -60,25 +79,56 @@ export function useLab() {
     return () => clearTimeout(timer);
   }, [isPlaying, currentStepIndex, executionTrace.length, playbackSpeed]);
 
+  // Mental-Model gate: while playing, halt whenever we land on a step that has no
+  // committed prediction. The user must Commit a Prediction or Reveal to continue.
+  useEffect(() => {
+    if (!isMentalGateMode || !isPlaying) return undefined;
+
+    const startIndex = playStartIndexRef.current;
+    if (startIndex === null || currentStepIndex === startIndex) return undefined;
+
+    if (!predictionHistory[currentStepIndex]) {
+      const stopTimer = setTimeout(() => setIsPlaying(false), 0);
+      return () => clearTimeout(stopTimer);
+    }
+
+    return undefined;
+  }, [isMentalGateMode, isPlaying, currentStepIndex, predictionHistory]);
+
   // Step controls
   const stepForward = useCallback(() => {
+    clearAdvanceTimer();
     setIsPlaying(false);
     setCurrentStepIndex(prev => Math.min(prev + 1, executionTrace.length - 1));
-  }, [executionTrace.length]);
+  }, [executionTrace.length, clearAdvanceTimer]);
 
   const stepBackward = useCallback(() => {
+    clearAdvanceTimer();
     setIsPlaying(false);
     setCurrentStepIndex(prev => Math.max(0, prev - 1));
-  }, []);
+  }, [clearAdvanceTimer]);
 
   const goToStep = useCallback((index) => {
+    clearAdvanceTimer();
     setIsPlaying(false);
     if (index >= 0 && index < executionTrace.length) {
       setCurrentStepIndex(index);
     }
-  }, [executionTrace.length]);
+  }, [executionTrace.length, clearAdvanceTimer]);
 
   const togglePlay = useCallback(() => {
+    clearAdvanceTimer();
+
+    if (isMentalGateMode) {
+      // Gate mode: run to the next step, then hold there waiting for the
+      // user's prediction / reveal. (Commit also auto-advances one step.)
+      const targetIndex = currentStepIndex >= executionTrace.length - 1 ? 0 : currentStepIndex;
+      playStartIndexRef.current = targetIndex;
+      setCurrentStepIndex(targetIndex);
+      setIsPlaying(true);
+      return;
+    }
+
     if (currentStepIndex >= executionTrace.length - 1) {
       // Loop or restart from step 0
       setCurrentStepIndex(0);
@@ -86,18 +136,36 @@ export function useLab() {
     } else {
       setIsPlaying(prev => !prev);
     }
-  }, [currentStepIndex, executionTrace.length]);
+  }, [currentStepIndex, executionTrace.length, isMentalGateMode, clearAdvanceTimer]);
 
   const resetLab = useCallback(() => {
+    clearAdvanceTimer();
     setIsPlaying(false);
     setCurrentStepIndex(0);
-  }, []);
+    setMutationType(MUTATIONS.NONE);
+    setInputArray(DEFAULT_ARRAY);
+    setPredictionHistory({});
+    setIsRepairOpen(false);
+    setIsTransferOpen(false);
+    setStats({
+      totalPredictions: 0,
+      correctPredictions: 0,
+      bugsExplored: new Set(),
+      bugsRepaired: new Set(),
+      challengeCompleted: false,
+      challengeScore: null
+    });
+  }, [clearAdvanceTimer]);
 
   // Set mutation
   const changeMutation = useCallback((newMutation) => {
+    clearAdvanceTimer();
     setIsPlaying(false);
     setMutationType(newMutation);
     setCurrentStepIndex(0);
+    // Predictions belong to the previous trace. Keeping them would make the
+    // comparison panel show a stale committed mental model for this new run.
+    setPredictionHistory({});
 
     if (newMutation !== MUTATIONS.NONE) {
       setStats(prev => ({
@@ -117,22 +185,37 @@ export function useLab() {
       return { success: false, error: 'All elements must be valid finite integers.' };
     }
 
+    clearAdvanceTimer();
     setIsPlaying(false);
-    setInputArray(newArr);
+    // Copy the values so React receives a new scenario even if a caller
+    // happens to reuse and mutate an existing array reference.
+    setInputArray([...newArr]);
     setCurrentStepIndex(0);
+    setPredictionHistory({});
     return { success: true };
-  }, []);
+  }, [clearAdvanceTimer]);
 
   // Submit student prediction for the upcoming/current step
   const submitPrediction = useCallback((predData) => {
-    // Target step is the current step
+    // Normalise predictedArray to strict numbers so === comparisons never fail due to "5" vs 5
+    const normalisedPredData = {
+      ...predData,
+      predictedArray: (predData.predictedArray || []).map((v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : v;
+      }),
+      predictedI: predData.predictedI != null ? Number(predData.predictedI) : null,
+      predictedJ: predData.predictedJ != null ? Number(predData.predictedJ) : null,
+    };
+
+    // Target step is the current step — what the student was observing before committing
     const targetStep = currentStep;
-    const analysis = analyzePrediction(predData, targetStep, previousStep, mutationType);
+    const analysis = analyzePrediction(normalisedPredData, targetStep, previousStep, mutationType);
 
     setPredictionHistory(prev => ({
       ...prev,
       [currentStepIndex]: {
-        prediction: predData,
+        prediction: normalisedPredData,
         analysis,
         stepIndex: currentStepIndex,
         stepSnapshot: targetStep
@@ -146,8 +229,24 @@ export function useLab() {
       correctPredictions: analysis.isCorrect ? prev.correctPredictions + 1 : prev.correctPredictions
     }));
 
+    // Mental-Model gate: after committing, resume the run only when the prediction
+    // was ACCURATE. If a divergence/error is detected, the run STOPS right here —
+    // the user must read the error explanation and press "Continue" to move on.
+    clearAdvanceTimer();
+    if (analysis.isCorrect) {
+      advanceTimerRef.current = setTimeout(() => {
+        playStartIndexRef.current = currentStepIndex;
+        setIsPlaying(true);
+      }, 900);
+    } else {
+      // Halt the run at the divergence step
+      playStartIndexRef.current = null;
+      setIsPlaying(false);
+    }
+
     return analysis;
-  }, [currentStep, previousStep, mutationType, currentStepIndex]);
+  }, [currentStep, previousStep, mutationType, currentStepIndex, isMentalGateMode, playbackSpeed, clearAdvanceTimer]);
+
 
   // Apply a targeted bug repair
   const repairBug = useCallback((repairOptionId) => {
@@ -161,6 +260,7 @@ export function useLab() {
       }));
       setMutationType(MUTATIONS.NONE);
       setCurrentStepIndex(0);
+      setPredictionHistory({});
       setIsRepairOpen(false);
       return { success: true, message: option.explanation };
     } else {

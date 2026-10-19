@@ -10,6 +10,7 @@ export function ComparisonArena({
   onCommitPrediction,
   onSkipPrediction,
   arrayLength,
+  scenarioKey,
   viewMode,
   onChangeViewMode
 }) {
@@ -73,7 +74,7 @@ export function ComparisonArena({
         <div className="comparison-grid two-column-grid">
           {/* Mental Model Panel on the Left */}
           <MentalModelPanel
-            key={currentStep.stepNumber}
+            key={`${scenarioKey}-${currentStep.stepNumber}-${predictionResult ? 'committed' : 'open'}`}
             currentStep={currentStep}
             previousStep={previousStep}
             predictionResult={predictionResult}

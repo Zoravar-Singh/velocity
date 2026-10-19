@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRightLeft, Lock, Check, FastForward } from 'lucide-react';
+import { Sparkles, Lock, Check, FastForward, ArrowRightLeft } from 'lucide-react';
 import { ArrayVisualizer } from './ArrayVisualizer.jsx';
 
 export function MentalModelPanel({
@@ -14,58 +14,67 @@ export function MentalModelPanel({
   const defaultI = currentStep.variables.i != null ? currentStep.variables.i : 0;
   const defaultJ = Math.max(0, arrayLength - 1 - defaultI);
 
-  // Staged prediction state before committing
+  // Staged prediction state before committing (strictly detailed cells mode)
   const [predictedArray, setPredictedArray] = useState(() => [...baseArray]);
-  const [swapIndexA, setSwapIndexA] = useState(defaultI);
-  const [swapIndexB, setSwapIndexB] = useState(defaultJ);
-  const [expectedOp] = useState('swap'); // 'swap'
+  const [selectedCellA, setSelectedCellA] = useState(null);
   const [predictedI, setPredictedI] = useState(defaultI);
   const [predictedJ, setPredictedJ] = useState(defaultJ);
-  const [predictionMode, setPredictionMode] = useState('quick'); // 'quick' | 'cell-by-cell'
 
-  // Handle quick swap execution on the staged mental model
-  const applyQuickSwap = () => {
-    const nextArr = [...baseArray];
-    if (swapIndexA >= 0 && swapIndexA < nextArr.length && swapIndexB >= 0 && swapIndexB < nextArr.length) {
-      const temp = nextArr[swapIndexA];
-      nextArr[swapIndexA] = nextArr[swapIndexB];
-      nextArr[swapIndexB] = temp;
-    }
-    setPredictedArray(nextArr);
-  };
-
-  const handleCellClick = (index) => {
-    if (predictionResult) return;
-    if (swapIndexA !== index) {
-      setSwapIndexB(index);
-      const nextArr = [...baseArray];
-      const temp = nextArr[swapIndexA];
-      nextArr[swapIndexA] = nextArr[index];
-      nextArr[index] = temp;
-      setPredictedArray(nextArr);
-    }
-  };
-
+  // Directly edit a cell value
   const handleValueChange = (idx, val) => {
     const nextArr = [...predictedArray];
-    nextArr[idx] = val === '' ? '' : Number(val);
+    if (val === '' || val === '-') {
+      nextArr[idx] = val;
+    } else {
+      const parsed = parseInt(val, 10);
+      nextArr[idx] = Number.isNaN(parsed) ? '' : parsed;
+    }
     setPredictedArray(nextArr);
+  };
+
+  // Click cells to swap them easily within the detailed array
+  const handleCellClick = (index) => {
+    if (predictionResult) return;
+    if (selectedCellA === null) {
+      setSelectedCellA(index);
+    } else if (selectedCellA === index) {
+      setSelectedCellA(null);
+    } else {
+      const nextArr = [...predictedArray];
+      const temp = nextArr[selectedCellA];
+      nextArr[selectedCellA] = nextArr[index];
+      nextArr[index] = temp;
+      setPredictedArray(nextArr);
+      setSelectedCellA(null);
+    }
+  };
+
+  // Reset to original base array
+  const handleResetToCurrent = () => {
+    setPredictedArray([...baseArray]);
+    setSelectedCellA(null);
+    setPredictedI(defaultI);
+    setPredictedJ(defaultJ);
   };
 
   const handleCommit = (e) => {
     if (e) e.preventDefault();
 
-    // Prepare prediction object
-    let finalArray = [...predictedArray];
-    // sanitize any empty strings to 0
-    finalArray = finalArray.map((v, i) => (typeof v === 'number' && Number.isFinite(v) ? v : baseArray[i]));
+    // Ensure all array elements are strictly Numbers
+    const finalArray = predictedArray.map((v, i) => {
+      const num = Number(v);
+      return Number.isFinite(num) ? num : baseArray[i];
+    });
+
+    const pI = Number(predictedI);
+    const pJ = Number(predictedJ);
 
     const predictionData = {
       predictedArray: finalArray,
-      predictedSwapIndices: expectedOp === 'swap' ? [swapIndexA, swapIndexB] : [],
-      predictedI: Number(predictedI),
-      predictedJ: Number(predictedJ),
-      expectedOp
+      predictedSwapIndices: [],
+      predictedI: Number.isFinite(pI) ? pI : null,
+      predictedJ: Number.isFinite(pJ) ? pJ : null,
+      expectedOp: 'swap'
     };
 
     onCommitPrediction(predictionData);
@@ -80,7 +89,7 @@ export function MentalModelPanel({
       <div className="panel mental-model-panel committed">
         <div className="panel-header">
           <div className="panel-title-group">
-            <Lock size={16} className="text-secondary" />
+            <Lock size={18} className="text-secondary" />
             <h2 className="panel-title">Your Mental Model</h2>
           </div>
           <span className={`status-badge ${analysis.isCorrect ? 'badge-success' : 'badge-danger'}`}>
@@ -103,17 +112,15 @@ export function MentalModelPanel({
 
             <div className="prediction-meta-grid">
               <div className="meta-box">
-                <span className="meta-label">Expected Operation:</span>
+                <span className="meta-label">Predicted Outcome:</span>
                 <span className="meta-val font-mono">
-                  {committed.expectedOp === 'swap'
-                    ? `Swap [${committed.predictedSwapIndices[0]}] ↔ [${committed.predictedSwapIndices[1]}]`
-                    : 'No swap / unchanged'}
+                  [{committed.predictedArray.join(', ')}]
                 </span>
               </div>
               <div className="meta-box">
                 <span className="meta-label">Predicted Pointers:</span>
                 <span className="meta-val font-mono">
-                  i = {committed.predictedI}, j = {committed.predictedJ}
+                  i = {committed.predictedI != null ? committed.predictedI : '—'}, j = {committed.predictedJ != null ? committed.predictedJ : '—'}
                 </span>
               </div>
             </div>
@@ -123,144 +130,94 @@ export function MentalModelPanel({
     );
   }
 
-  // Interactive Prediction Mode (Before committing)
+  // Interactive Detailed Prediction Mode (Before committing)
   return (
     <div className="panel mental-model-panel staging">
       <div className="panel-header">
         <div className="panel-title-group">
-          <Sparkles size={16} className="text-accent animate-pulse" />
+          <Sparkles size={18} className="text-accent animate-pulse" />
           <h2 className="panel-title">Your Mental Model</h2>
         </div>
-        <div className="mode-toggle">
-          <button
-            type="button"
-            className={`mode-btn ${predictionMode === 'quick' ? 'active' : ''}`}
-            onClick={() => setPredictionMode('quick')}
-          >
-            Quick Swap
-          </button>
-          <button
-            type="button"
-            className={`mode-btn ${predictionMode === 'cell-by-cell' ? 'active' : ''}`}
-            onClick={() => setPredictionMode('cell-by-cell')}
-          >
-            Detailed Cells
-          </button>
-        </div>
+        <span className="text-xs text-secondary font-mono">Detailed Prediction</span>
       </div>
 
       <div className="panel-body">
         <p className="prediction-prompt">
-          Before inspecting the computer's actual output, predict what will happen after this step:
+          Predict what the array and pointers will look like. Type the values below or click two cells to swap them:
         </p>
 
-        {predictionMode === 'quick' ? (
-          <div className="quick-prediction-form">
-            <div className="swap-selector-row">
-              <div className="selector-group">
-                <label className="input-label">Swap Left Index:</label>
-                <select
-                  value={swapIndexA}
-                  onChange={(e) => {
-                    const idx = Number(e.target.value);
-                    setSwapIndexA(idx);
-                    setPredictedI(idx);
-                  }}
-                  className="dropdown-select"
+        {/* Detailed Cell-by-Cell Interactive Inputs */}
+        <div className="detailed-prediction-section">
+          <div className="cell-inputs-track">
+            {predictedArray.map((val, idx) => {
+              const isSelected = selectedCellA === idx;
+              return (
+                <div
+                  key={idx}
+                  className={`cell-input-box ${isSelected ? 'cell-input-selected' : ''}`}
+                  onClick={() => handleCellClick(idx)}
                 >
-                  {baseArray.map((_, idx) => (
-                    <option key={idx} value={idx}>
-                      Index [{idx}] (value: {baseArray[idx]})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="swap-icon-container">
-                <ArrowRightLeft size={16} className="text-accent" />
-              </div>
-
-              <div className="selector-group">
-                <label className="input-label">With Right Index:</label>
-                <select
-                  value={swapIndexB}
-                  onChange={(e) => {
-                    const idx = Number(e.target.value);
-                    setSwapIndexB(idx);
-                    setPredictedJ(idx);
-                  }}
-                  className="dropdown-select"
-                >
-                  {baseArray.map((_, idx) => (
-                    <option key={idx} value={idx}>
-                      Index [{idx}] (value: {baseArray[idx]})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="button"
-                className="preview-swap-btn"
-                onClick={applyQuickSwap}
-                title="Preview this swap in the cells below"
-              >
-                Apply Swap
-              </button>
-            </div>
-
-            <div className="visual-preview-section">
-              <ArrayVisualizer
-                array={predictedArray}
-                pointers={{ i: predictedI, j: predictedJ }}
-                highlightIndices={[swapIndexA, swapIndexB]}
-                label="Predicted Resulting Array (Click cells to swap)"
-                isInteractive={true}
-                onCellClick={handleCellClick}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="cell-by-cell-form">
-            <p className="text-xs text-secondary mb-2">
-              Enter the exact integer you predict will be at each index:
-            </p>
-            <div className="cell-inputs-track">
-              {predictedArray.map((val, idx) => (
-                <div key={idx} className="cell-input-box">
                   <span className="cell-input-index">[{idx}]</span>
                   <input
                     type="number"
                     className="cell-num-input"
                     value={val}
                     onChange={(e) => handleValueChange(idx, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                   />
+                  {isSelected && <span className="cell-swap-hint">Swap</span>}
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            <div className="pointer-inputs-row">
-              <div className="pointer-input-group">
-                <label className="text-xs text-secondary">Predicted i:</label>
-                <input
-                  type="number"
-                  value={predictedI}
-                  onChange={(e) => setPredictedI(e.target.value)}
-                  className="dropdown-select w-20"
-                />
-              </div>
-              <div className="pointer-input-group">
-                <label className="text-xs text-secondary">Predicted j:</label>
-                <input
-                  type="number"
-                  value={predictedJ}
-                  onChange={(e) => setPredictedJ(e.target.value)}
-                  className="dropdown-select w-20"
-                />
-              </div>
+          <div className="swap-hint-bar">
+            <span className="text-xs text-muted flex items-center gap-1.5">
+              <ArrowRightLeft size={13} className="text-accent" />
+              <span>Click any two cells to swap their values, or type new integers directly into the boxes.</span>
+            </span>
+            <button
+              type="button"
+              className="text-xs text-secondary hover:text-foreground underline ml-auto"
+              onClick={handleResetToCurrent}
+            >
+              Reset Inputs
+            </button>
+          </div>
+
+          {/* Pointer Prediction Inputs */}
+          <div className="pointer-inputs-row">
+            <div className="pointer-input-group">
+              <label className="text-xs text-secondary font-semibold">Predicted i (left):</label>
+              <input
+                type="number"
+                value={predictedI}
+                onChange={(e) => setPredictedI(e.target.value)}
+                className="dropdown-select w-20"
+                placeholder="i"
+              />
+            </div>
+            <div className="pointer-input-group">
+              <label className="text-xs text-secondary font-semibold">Predicted j (right):</label>
+              <input
+                type="number"
+                value={predictedJ}
+                onChange={(e) => setPredictedJ(e.target.value)}
+                className="dropdown-select w-20"
+                placeholder="j"
+              />
             </div>
           </div>
-        )}
+
+          {/* Visual Array Preview of the staged Mental Model */}
+          <div className="visual-preview-section mt-2">
+            <ArrayVisualizer
+              array={predictedArray.map(v => (v === '' || Number.isNaN(Number(v)) ? '?' : Number(v)))}
+              pointers={{ i: Number(predictedI), j: Number(predictedJ) }}
+              label="Staged Mental Model Preview"
+            />
+          </div>
+        </div>
 
         <div className="prediction-actions-bar">
           <button
@@ -268,7 +225,7 @@ export function MentalModelPanel({
             className="action-btn commit-btn"
             onClick={handleCommit}
           >
-            <Check size={16} />
+            <Check size={18} />
             <span>Commit Prediction & Compare</span>
           </button>
 
@@ -278,7 +235,7 @@ export function MentalModelPanel({
             onClick={onSkipPrediction}
             title="Reveal actual step without recording a prediction"
           >
-            <FastForward size={14} />
+            <FastForward size={16} />
             <span>Reveal Without Predicting</span>
           </button>
         </div>

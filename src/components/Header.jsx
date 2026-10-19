@@ -6,7 +6,9 @@ export function Header({
   stats,
   onReset,
   onOpenTransfer,
-  onOpenGuide
+  onOpenGuide,
+  activeLab = 'array',
+  onChangeLab
 }) {
   const accuracyPercent = stats.totalPredictions > 0
     ? Math.round((stats.correctPredictions / stats.totalPredictions) * 100)
@@ -31,6 +33,7 @@ export function Header({
       <div className="header-lab-info">
         <span className="lab-label">ACTIVE LAB:</span>
         <span className="lab-title">{labName}</span>
+        {onChangeLab && <select className="lab-switcher" value={activeLab} onChange={event => onChangeLab(event.target.value)} aria-label="Choose lab"><option value="array">Reverse an Array</option><option value="linked-list">Reverse a Linked List</option></select>}
       </div>
 
       <div className="header-actions-section">

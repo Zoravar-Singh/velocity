@@ -4,6 +4,11 @@ import { MUTATIONS } from './mutations.js';
  * Explanation Engine for MindTrace.
  * Compares student mental model predictions against actual simulator state,
  * producing structured, rule-based feedback and educational explanations.
+ *
+ * KEY RULE: The only comparison that matters for isCorrect is the ARRAY.
+ * If every element of predictedArray equals the corresponding element in actualArray
+ * (after Number() coercion — HTML inputs are strings, simulator values are numbers),
+ * the prediction is CORRECT. Pointer mismatches are noted informally but never veto a match.
  */
 
 export function analyzePrediction(prediction, actualStep, previousStep, mutationType) {
@@ -15,13 +20,14 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
   const prevArray = previousStep ? previousStep.array : actualArray;
   const predictedArray = prediction.predictedArray || [];
 
-  // Cell-by-cell comparison
+  // ── Array comparison: always coerce to Number so that
+  //    string "5" (from <input type="number">) equals numeric 5 from the simulator.
   const matchingIndices = [];
   const divergentIndices = [];
 
   const maxLen = Math.max(actualArray.length, predictedArray.length);
   for (let k = 0; k < maxLen; k++) {
-    if (predictedArray[k] === actualArray[k]) {
+    if (Number(predictedArray[k]) === Number(actualArray[k])) {
       matchingIndices.push(k);
     } else {
       divergentIndices.push(k);
@@ -30,24 +36,43 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
 
   const isArrayMatch = divergentIndices.length === 0;
   const firstDivergenceIndex = divergentIndices.length > 0 ? divergentIndices[0] : null;
+  const accuracyScore = Math.round((matchingIndices.length / maxLen) * 100);
 
-  // Swap target comparison (if student entered swap prediction)
-  let swapMatch = true;
-  if (prediction.predictedSwapIndices && prediction.predictedSwapIndices.length > 0) {
-    const pSwaps = [...prediction.predictedSwapIndices].sort((a, b) => a - b);
-    const actualSwaps = [...(actualStep.changedIndices || [])].sort((a, b) => a - b);
+  const { i, j } = actualStep.variables;
+  const n = actualArray.length;
+  const halfLen = Math.floor(n / 2);
 
-    if (pSwaps.length !== actualSwaps.length || !pSwaps.every((val, idx) => val === actualSwaps[idx])) {
-      swapMatch = false;
-    }
+  // ── EARLY EXIT — array matches 100% → student is correct, full stop. ──────
+  if (isArrayMatch) {
+    // Optionally note pointer discrepancy without failing the prediction
+    const predictedINum = prediction.predictedI != null ? Number(prediction.predictedI) : null;
+    const predictedJNum = prediction.predictedJ != null ? Number(prediction.predictedJ) : null;
+
+    const pointersDiffer =
+      (predictedINum != null && i != null && predictedINum !== i) ||
+      (predictedJNum != null && j != null && predictedJNum !== j);
+
+    const whyItDiffers = pointersDiffer
+      ? `Your array prediction was perfect! Note: your pointer values differed slightly ` +
+        `(predicted i=${predictedINum}, j=${predictedJNum} vs actual i=${i}, j=${j}), ` +
+        `but the array state is what counts.`
+      : 'Your mental model perfectly aligns with the deterministic execution trace!';
+
+    return {
+      isCorrect: true,
+      accuracyScore: 100,
+      matchingIndices,
+      divergentIndices: [],
+      firstDivergenceIndex: null,
+      studentExpectation: `You expected the array to be [${predictedArray.map(Number).join(', ')}].`,
+      actualOccurrence: `The computer's array is [${actualArray.join(', ')}].`,
+      keyVariableOrCondition: actualStep.conditionText || `i = ${i}, j = ${j}`,
+      whyItDiffers,
+      nextInspectionTip: 'Advance to the next step or explore what happens when an intentional bug mutation is enabled.'
+    };
   }
 
-  // Pointer prediction comparison
-  const iMatch = prediction.predictedI == null || prediction.predictedI === actualStep.variables.i;
-  const jMatch = prediction.predictedJ == null || prediction.predictedJ === actualStep.variables.j;
-
-  const isFullyCorrect = isArrayMatch && swapMatch && iMatch && jMatch;
-  const accuracyScore = Math.round((matchingIndices.length / maxLen) * 100);
+  // ── Below here the arrays differ — generate specific educational feedback ──
 
   // Generate structured breakdown
   let studentExpectation = '';
@@ -55,31 +80,6 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
   let keyVariableOrCondition = '';
   let whyItDiffers = '';
   let nextInspectionTip = '';
-
-  const { i, j } = actualStep.variables;
-  const n = actualArray.length;
-  const halfLen = Math.floor(n / 2);
-
-  if (isFullyCorrect) {
-    studentExpectation = `You expected the array to become [${predictedArray.join(', ')}] after this step.`;
-    actualOccurrence = `The computer executed ${actualStep.operationName} and produced [${actualArray.join(', ')}].`;
-    keyVariableOrCondition = actualStep.conditionText || `i = ${i}, j = ${j}`;
-    whyItDiffers = 'Your mental model perfectly aligns with the deterministic execution trace!';
-    nextInspectionTip = 'Advance to the next step or explore what happens when an intentional bug mutation is enabled.';
-
-    return {
-      isCorrect: true,
-      accuracyScore: 100,
-      matchingIndices,
-      divergentIndices,
-      firstDivergenceIndex: null,
-      studentExpectation,
-      actualOccurrence,
-      keyVariableOrCondition,
-      whyItDiffers,
-      nextInspectionTip
-    };
-  }
 
   // Case 1: Data Loss Bug Mutation triggered, but student predicted normal swap
   if (mutationType === MUTATIONS.DATA_LOSS_SWAP && actualStep.phase.includes('DATA_LOSS')) {
@@ -101,7 +101,7 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
   }
   // Case 3: Off-by-one during extra swap
   else if (mutationType === MUTATIONS.OFF_BY_ONE && (actualStep.phase === 'ASSIGN_J' || actualStep.phase === 'ITERATION_COMPLETE') && i >= halfLen) {
-    studentExpectation = `You predicted array [${predictedArray.join(', ')}].`;
+    studentExpectation = `You predicted array [${predictedArray.map(Number).join(', ')}].`;
     actualOccurrence = `The extra loop iteration swapped arr[${i}] and arr[${j}], modifying elements after the midpoint.`;
     keyVariableOrCondition = `Loop bound <= ${halfLen} vs < ${halfLen}`;
     whyItDiffers = `The loop did not stop at index ${halfLen - 1}. Because of the <= condition, an extra swap occurred.`;
@@ -116,7 +116,7 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
     nextInspectionTip = 'Watch how each pair gets reversed twice, ending back in the initial unreversed state.';
   }
   // Case 5: Wrong Swap Target (miscalculating j)
-  else if (prediction.predictedSwapIndices && prediction.predictedSwapIndices.length > 0 && !swapMatch) {
+  else if (prediction.predictedSwapIndices && prediction.predictedSwapIndices.length > 0) {
     const studentJ = prediction.predictedSwapIndices.find(idx => idx !== i) ?? prediction.predictedSwapIndices[1];
     studentExpectation = `You expected index ${i} to swap with index ${studentJ}.`;
     actualOccurrence = `The algorithm swapped index ${i} with index ${j}.`;
@@ -124,24 +124,16 @@ export function analyzePrediction(prediction, actualStep, previousStep, mutation
     whyItDiffers = `The mirror index j is derived dynamically from the end of the array using formula (length - 1 - i). For length ${n} and i = ${i}, j is exactly ${j}.`;
     nextInspectionTip = 'Check the formula on line 3: const j = arr.length - 1 - i.';
   }
-  // Case 6: Divergent array cells
-  else if (!isArrayMatch) {
-    const mismatchValExpected = predictedArray[firstDivergenceIndex];
-    const mismatchValActual = actualArray[firstDivergenceIndex];
-
-    studentExpectation = `You predicted index ${firstDivergenceIndex} would be ${mismatchValExpected}.`;
-    actualOccurrence = `Index ${firstDivergenceIndex} is actually ${mismatchValActual}.`;
-    keyVariableOrCondition = actualStep.operationName || `arr[${firstDivergenceIndex}]`;
-    whyItDiffers = `During this step, the operation performed was "${actualStep.operationName}". Only indices [${(actualStep.changedIndices || []).join(', ')}] were modified.`;
-    nextInspectionTip = `Inspect cell ${firstDivergenceIndex} in the comparison panel to verify when its value actually changes.`;
-  }
-  // Generic fallback
+  // Case 6: Divergent array cells — specific mismatch feedback
   else {
-    studentExpectation = `You predicted: [${predictedArray.join(', ')}].`;
-    actualOccurrence = `Actual result: [${actualArray.join(', ')}].`;
-    keyVariableOrCondition = actualStep.operationName;
-    whyItDiffers = 'The predicted values diverged from the step-by-step simulator trace.';
-    nextInspectionTip = 'Step backward to re-examine the previous variables and trace line by line.';
+    const mismatchValExpected = Number(predictedArray[firstDivergenceIndex]);
+    const mismatchValActual = Number(actualArray[firstDivergenceIndex]);
+
+    studentExpectation = `You predicted index ${firstDivergenceIndex} would hold ${mismatchValExpected}.`;
+    actualOccurrence = `Index ${firstDivergenceIndex} actually holds ${mismatchValActual}.`;
+    keyVariableOrCondition = actualStep.operationName || `arr[${firstDivergenceIndex}]`;
+    whyItDiffers = `During this step, the operation "${actualStep.operationName}" only changed indices [${(actualStep.changedIndices || []).join(', ')}]. Index ${firstDivergenceIndex} was not touched this step.`;
+    nextInspectionTip = `Inspect cell ${firstDivergenceIndex} in the comparison panel to verify when its value actually changes.`;
   }
 
   return {

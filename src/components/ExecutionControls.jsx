@@ -12,7 +12,8 @@ export function ExecutionControls({
   onTogglePlay,
   onReset,
   onGoToStep,
-  onChangeSpeed
+  onChangeSpeed,
+  isPredictionGate = false
 }) {
   const canGoBack = currentStepIndex > 0;
   const canGoForward = currentStepIndex < totalSteps - 1;
@@ -35,7 +36,13 @@ export function ExecutionControls({
           <button
             className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`}
             onClick={onTogglePlay}
-            title={isPlaying ? 'Pause auto-advancement' : 'Run execution trace'}
+            title={
+              isPredictionGate && !isPlaying
+                ? 'Run: advances one step, then pauses — commit a prediction or click "Reveal Without Predicting" to continue'
+                : isPlaying
+                  ? 'Pause auto-advancement'
+                  : 'Run execution trace'
+            }
           >
             {isPlaying ? <Pause size={18} /> : <Play size={18} />}
             <span className="btn-label">{isPlaying ? 'Pause' : 'Run'}</span>

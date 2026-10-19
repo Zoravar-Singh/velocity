@@ -54,8 +54,8 @@ html, body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.45;
+  font-size: 16px;
+  line-height: 1.5;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -68,10 +68,10 @@ html, body {
 
 /* Typography Helpers */
 .font-mono { font-family: var(--font-mono); }
-.text-xs { font-size: 0.75rem; }
-.text-sm { font-size: 0.85rem; }
-.text-base { font-size: 1rem; }
-.text-lg { font-size: 1.15rem; }
+.text-xs { font-size: 0.82rem; }
+.text-sm { font-size: 0.92rem; }
+.text-base { font-size: 1.05rem; }
+.text-lg { font-size: 1.25rem; }
 .text-accent { color: var(--accent); }
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
@@ -172,17 +172,17 @@ html, body {
 }
 
 .brand-name {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #fff;
 }
 
 .brand-badge {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  padding: 0.15rem 0.45rem;
+  padding: 0.2rem 0.5rem;
   background-color: var(--accent-light);
   color: var(--accent);
   border: 1px solid rgba(99, 102, 241, 0.3);
@@ -190,28 +190,28 @@ html, body {
 }
 
 .brand-tagline {
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .header-lab-info {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.75rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
 }
 
 .lab-label {
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 
 .lab-title {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -225,8 +225,8 @@ html, body {
 .learning-stats-pill {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.25rem 0.65rem;
+  gap: 0.75rem;
+  padding: 0.35rem 0.85rem;
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -235,25 +235,25 @@ html, body {
 .stat-unit {
   display: flex;
   align-items: baseline;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .stat-value {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .stat-name {
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .stat-divider {
   width: 1px;
-  height: 12px;
+  height: 14px;
   background-color: var(--border-color);
 }
 
@@ -262,9 +262,9 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.78rem;
+  gap: 0.45rem;
+  padding: 0.48rem 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
   background-color: var(--bg-panel-elevated);
@@ -737,7 +737,7 @@ html, body {
 }
 
 .banner-title {
-  font-size: 0.8rem;
+  font-size: 0.94rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -745,8 +745,8 @@ html, body {
 }
 
 .banner-tag {
-  font-size: 0.68rem;
-  padding: 0.1rem 0.35rem;
+  font-size: 0.78rem;
+  padding: 0.15rem 0.45rem;
   background-color: rgba(99, 102, 241, 0.15);
   border-radius: var(--radius-sm);
   color: #a5b4fc;
@@ -755,10 +755,10 @@ html, body {
 .diff-pill {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.72rem;
+  gap: 0.4rem;
+  font-size: 0.84rem;
   font-weight: 600;
-  padding: 0.2rem 0.55rem;
+  padding: 0.25rem 0.65rem;
   border-radius: var(--radius-sm);
 }
 
@@ -792,11 +792,11 @@ html, body {
 .array-visualizer-container {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .array-visualizer-label {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -806,7 +806,7 @@ html, body {
 .array-cells-track {
   display: flex;
   align-items: flex-end;
-  gap: 0.35rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 
@@ -814,7 +814,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .cell-column.interactive {
@@ -827,7 +827,7 @@ html, body {
 }
 
 .pointer-header {
-  height: 18px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -835,9 +835,9 @@ html, body {
 
 .pointer-tag {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  padding: 0.05rem 0.3rem;
+  padding: 0.08rem 0.4rem;
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
@@ -861,8 +861,8 @@ html, body {
 }
 
 .array-cell {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -874,14 +874,14 @@ html, body {
 
 .cell-value {
   font-family: var(--font-mono);
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
 }
 
 .cell-index {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   user-select: none;
 }
@@ -937,9 +937,9 @@ html, body {
 }
 
 .mode-btn {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.55rem;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -953,9 +953,9 @@ html, body {
 }
 
 .prediction-prompt {
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .quick-prediction-form {
@@ -967,9 +967,9 @@ html, body {
 .swap-selector-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   background-color: var(--bg-panel-subtle);
-  padding: 0.5rem;
+  padding: 0.6rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
 }
@@ -977,14 +977,15 @@ html, body {
 .selector-group {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
   flex: 1;
 }
 
 .input-label {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 .dropdown-select {
@@ -992,8 +993,8 @@ html, body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: #fff;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.4rem;
+  font-size: 0.88rem;
+  padding: 0.35rem 0.55rem;
 }
 
 .dropdown-select:focus {
@@ -1002,8 +1003,8 @@ html, body {
 }
 
 .preview-swap-btn {
-  padding: 0.35rem 0.55rem;
-  font-size: 0.72rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   background-color: var(--bg-panel-elevated);
   border: 1px solid var(--border-color);
@@ -1026,7 +1027,7 @@ html, body {
 
 .cell-inputs-track {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -1034,21 +1035,21 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .cell-input-index {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 
 .cell-num-input {
-  width: 44px;
-  height: 38px;
+  width: 48px;
+  height: 42px;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   background-color: #070b12;
   border: 1px solid var(--border-color);
@@ -1063,21 +1064,21 @@ html, body {
 
 .pointer-inputs-row {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  gap: 0.85rem;
+  margin-top: 0.35rem;
 }
 
 .pointer-input-group {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .prediction-actions-bar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
 }
 
 .commit-btn {
@@ -1085,7 +1086,8 @@ html, body {
   background-color: var(--accent);
   border-color: var(--accent);
   color: #fff;
-  padding: 0.45rem 0.85rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.92rem;
 }
 
 .commit-btn:hover {
@@ -1096,6 +1098,7 @@ html, body {
   background-color: transparent;
   border-color: var(--border-color);
   color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 .skip-btn:hover {
@@ -1113,7 +1116,7 @@ html, body {
 
 .meta-box {
   background-color: var(--bg-panel-subtle);
-  padding: 0.45rem 0.65rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   display: flex;
@@ -1121,15 +1124,15 @@ html, body {
 }
 
 .meta-label {
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .meta-val {
-  font-size: 0.8rem;
+  font-size: 0.92rem;
   color: #fff;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -1138,7 +1141,7 @@ html, body {
 .engine-variables-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 @media (max-width: 600px) {
@@ -1151,20 +1154,20 @@ html, body {
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 0.4rem 0.55rem;
+  padding: 0.5rem 0.65rem;
   display: flex;
   flex-direction: column;
 }
 
 .var-label {
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .var-val {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 700;
   margin-top: 0.15rem;
   color: #fff;
@@ -1174,18 +1177,22 @@ html, body {
   grid-column: span 1;
 }
 
+.condition-card .var-val {
+  font-size: 0.82rem;
+}
+
 .anomaly-alert-card {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.6rem;
+  gap: 0.6rem;
+  padding: 0.75rem;
   background-color: var(--danger-bg);
   border: 1px solid var(--danger-border);
   border-radius: var(--radius-md);
 }
 
 .anomaly-title {
-  font-size: 0.75rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--danger);
   text-transform: uppercase;
@@ -1193,10 +1200,10 @@ html, body {
 }
 
 .anomaly-msg {
-  font-size: 0.72rem;
+  font-size: 0.84rem;
   color: #fca5a5;
   margin-top: 0.15rem;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 /* --------------------------------------------------------------------------
@@ -1229,13 +1236,13 @@ html, body {
 .control-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.35rem 0.65rem;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
   background-color: var(--bg-panel-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 0.75rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1278,21 +1285,21 @@ html, body {
 }
 
 .step-count-text {
-  font-size: 0.72rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
 }
 
 .step-phase-badge {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   color: var(--accent);
   background-color: var(--accent-light);
-  padding: 0.1rem 0.4rem;
+  padding: 0.15rem 0.5rem;
   border-radius: var(--radius-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 250px;
+  max-width: 280px;
 }
 
 .scrubber-track {
@@ -1309,18 +1316,18 @@ html, body {
 .speed-selector {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .speed-pills {
   display: flex;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .speed-pill {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  padding: 0.15rem 0.35rem;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.45rem;
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
@@ -1486,7 +1493,7 @@ html, body {
 }
 
 .modal-title {
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #fff;
 }
@@ -1521,13 +1528,13 @@ html, body {
 .bug-summary-box {
   background-color: rgba(239, 68, 68, 0.08);
   border: 1px solid var(--danger-border);
-  padding: 0.65rem;
+  padding: 0.75rem;
   border-radius: var(--radius-md);
 }
 
 .fix-hint-box {
   background-color: rgba(99, 102, 241, 0.1);
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-sm);
   border-left: 2px solid var(--accent);
 }
@@ -1535,14 +1542,14 @@ html, body {
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .repair-option-card {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.75rem;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -1567,8 +1574,8 @@ html, body {
 .repair-result-card {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.65rem;
+  gap: 0.75rem;
+  padding: 0.75rem;
   border-radius: var(--radius-md);
   margin-top: 0.75rem;
 }
@@ -1587,7 +1594,7 @@ html, body {
 .challenge-hero-card {
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
-  padding: 0.75rem;
+  padding: 0.85rem;
   border-radius: var(--radius-md);
   text-align: center;
 }
@@ -1596,12 +1603,12 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .challenge-cell {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   background-color: var(--bg-panel-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -1613,35 +1620,35 @@ html, body {
 
 .cell-num {
   font-family: var(--font-mono);
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
 }
 
 .cell-sub {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 
 .question-title {
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #fff;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .options-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .option-btn {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.85rem;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -1649,6 +1656,7 @@ html, body {
   text-align: left;
   cursor: pointer;
   transition: all 0.15s ease;
+  font-size: 0.95rem;
 }
 
 .option-btn:hover {
@@ -1662,15 +1670,15 @@ html, body {
 }
 
 .option-circle {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #070b12;
   border: 1px solid var(--border-color);
   border-radius: 50%;
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-secondary);
 }
@@ -1690,8 +1698,8 @@ html, body {
 .score-card {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem;
+  gap: 0.95rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
 }
 
@@ -1715,21 +1723,21 @@ html, body {
   background-color: var(--bg-panel-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 0.75rem;
+  padding: 0.9rem;
 }
 
 .summary-box-title {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--text-secondary);
 }
 
 .summary-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 @media (max-width: 600px) {
@@ -1741,27 +1749,27 @@ html, body {
 .summary-stat-cell {
   background-color: var(--bg-panel-elevated);
   border: 1px solid var(--border-color);
-  padding: 0.45rem 0.55rem;
+  padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
 }
 
 .stat-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
 .stat-number {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
 }
 
 .stat-sub {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 

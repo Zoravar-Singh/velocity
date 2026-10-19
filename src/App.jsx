@@ -42,6 +42,8 @@ export function App() {
   } = useLab();
 
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  // View mode: 'mental-model' (Predict & Compare with blurred execution) or 'actual-execution' (Observer mode, mental model removed)
+  const [viewMode, setViewMode] = useState('mental-model');
 
   // Helper when student clicks "Reveal Without Predicting"
   const handleSkipPrediction = () => {
@@ -61,25 +63,27 @@ export function App() {
 
       {/* Main Workspace Layout */}
       <main className="main-workspace">
-        {/* Left Column: Code, Custom Input & Bug Mutation Controls */}
+        {/* Left Column: Bug Mutation Dropdown at Top + Expanded Code Box Below */}
         <div className="workspace-column sidebar-column">
+          {/* Intentional Bug Mutations Dropdown Menu above the code */}
+          <BugControls
+            currentMutation={mutationType}
+            onChangeMutation={changeMutation}
+            onOpenRepair={() => setIsRepairOpen(true)}
+          />
+
+          {/* Bigger Code Box on the left side */}
           <CodePanel
             mutationDefinition={mutationDefinition}
             activeLine={currentStep.activeLine}
             inputArray={inputArray}
             onUpdateArray={updateInputArray}
           />
-
-          <BugControls
-            currentMutation={mutationType}
-            onChangeMutation={changeMutation}
-            onOpenRepair={() => setIsRepairOpen(true)}
-          />
         </div>
 
         {/* Right / Center Column: Comparison Arena, Controls & Explanation */}
         <div className="workspace-column main-content-column">
-          {/* Defining Comparison Feature: Mental Model vs Actual Execution */}
+          {/* Comparison Arena with Mode Selector (Mental Model vs Actual Execution) */}
           <ComparisonArena
             currentStep={currentStep}
             previousStep={previousStep}
@@ -87,6 +91,8 @@ export function App() {
             onCommitPrediction={submitPrediction}
             onSkipPrediction={handleSkipPrediction}
             arrayLength={inputArray.length}
+            viewMode={viewMode}
+            onChangeViewMode={setViewMode}
           />
 
           {/* Step-by-Step Execution Transport Controls */}
@@ -108,7 +114,6 @@ export function App() {
           <ExplanationPanel
             currentStep={currentStep}
             predictionResult={currentPredictionResult}
-            mutationType={mutationType}
           />
         </div>
       </main>
